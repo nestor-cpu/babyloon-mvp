@@ -1,0 +1,186 @@
+{
+  "version": "1.0",
+  "description": "babyloon.ai demo corpus — 20 segments across trust levels and languages",
+  "segments": [
+    {
+      "segment_id": "seg-wiki-ai-001",
+      "source_name": "Wikipedia EN — Artificial Intelligence",
+      "source_url": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+      "license_class": "CC-BY-SA",
+      "language": "en",
+      "trust_score": 0.95,
+      "content": "Artificial intelligence (AI) is intelligence demonstrated by machines, as opposed to the natural intelligence displayed by animals including humans. AI research has been defined as the field of study of intelligent agents, which refers to any system that perceives its environment and takes actions that maximize its chance of achieving its goals."
+    },
+    {
+      "segment_id": "seg-arxiv-attn-001",
+      "source_name": "arXiv — Attention Is All You Need (Vaswani et al. 2017)",
+      "source_url": "https://arxiv.org/abs/1706.03762",
+      "license_class": "CC-BY",
+      "language": "en",
+      "trust_score": 0.93,
+      "content": "The dominant sequence transduction models are based on complex recurrent or convolutional neural networks. The Transformer architecture, based solely on attention mechanisms, dispensing with recurrence and convolutions entirely, allows for significantly more parallelization and achieves state of the art on machine translation tasks."
+    },
+    {
+      "segment_id": "seg-pubmed-ml-001",
+      "source_name": "PubMed Central — Machine Learning in Healthcare",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/",
+      "license_class": "CC-BY",
+      "language": "en",
+      "trust_score": 0.90,
+      "content": "Machine learning algorithms have demonstrated remarkable performance in medical image analysis, natural language processing of clinical notes, and prediction of patient outcomes. Deep neural networks trained on large medical datasets can identify pathological patterns with accuracy approaching or exceeding that of trained clinicians."
+    },
+    {
+      "segment_id": "seg-stanford-phil-001",
+      "source_name": "Stanford Encyclopedia of Philosophy — Knowledge",
+      "source_url": "https://plato.stanford.edu/entries/knowledge-analysis/",
+      "license_class": "CC-BY-SA",
+      "language": "en",
+      "trust_score": 0.92,
+      "content": "The analysis of knowledge has been a central preoccupation of epistemology since at least the time of Plato. The traditional tripartite analysis holds that knowledge is justified true belief. This analysis was thought to be correct until Edmund Gettier published a short but influential paper in 1963 demonstrating counterexamples."
+    },
+    {
+      "segment_id": "seg-mit-ocw-001",
+      "source_name": "MIT OpenCourseWare — Linear Algebra 18.06",
+      "source_url": "https://ocw.mit.edu/courses/mathematics/18-06-linear-algebra/",
+      "license_class": "CC-BY-NC-SA",
+      "language": "en",
+      "trust_score": 0.88,
+      "content": "Linear algebra is the study of linear sets of equations and their transformation properties. The subject is used extensively in engineering, physics, natural sciences, computer science, and the social sciences. Key concepts include vectors, matrices, determinants, eigenvalues, and eigenvectors."
+    },
+    {
+      "segment_id": "seg-techcrunch-ai-001",
+      "source_name": "TechCrunch — AI Regulation Landscape 2025",
+      "source_url": "https://techcrunch.com/ai-regulation",
+      "license_class": "proprietary",
+      "language": "en",
+      "trust_score": 0.72,
+      "content": "The global race to regulate artificial intelligence has intensified in 2025, with the EU AI Act entering its implementation phase while the US continues to develop its own framework. Tech companies are scrambling to comply with requirements around transparency, safety testing, and high-risk AI system oversight."
+    },
+    {
+      "segment_id": "seg-medium-nn-001",
+      "source_name": "Medium — Understanding Neural Networks for Beginners",
+      "source_url": "https://medium.com/@author/neural-networks",
+      "license_class": "proprietary",
+      "language": "en",
+      "trust_score": 0.61,
+      "content": "Neural networks are computational systems loosely inspired by the brain. They consist of layers of interconnected nodes that process information. Training a neural network involves feeding it data and adjusting weights through backpropagation to minimize prediction errors."
+    },
+    {
+      "segment_id": "seg-bbc-ai-001",
+      "source_name": "BBC News — AI in Europe",
+      "source_url": "https://www.bbc.com/news/technology",
+      "license_class": "proprietary",
+      "language": "en",
+      "trust_score": 0.75,
+      "content": "European lawmakers are pushing forward with landmark legislation on artificial intelligence, aiming to ensure the technology is safe and respects fundamental rights. The regulation would classify AI systems by risk level and impose stricter requirements on high-risk applications in healthcare, policing, and critical infrastructure."
+    },
+    {
+      "segment_id": "seg-stackoverflow-py-001",
+      "source_name": "Stack Overflow — Python Best Practices",
+      "source_url": "https://stackoverflow.com/questions/python-best-practices",
+      "license_class": "CC-BY-SA",
+      "language": "en",
+      "trust_score": 0.65,
+      "content": "Python best practices include following PEP 8 style guidelines, using virtual environments for project isolation, writing docstrings for all public functions, using type hints for better code documentation, and writing unit tests with pytest. Code readability should be prioritized over cleverness."
+    },
+    {
+      "segment_id": "seg-quora-gpt-001",
+      "source_name": "Quora — How does GPT work?",
+      "source_url": "https://www.quora.com/how-gpt-works",
+      "license_class": "proprietary",
+      "language": "en",
+      "trust_score": 0.55,
+      "content": "GPT works by predicting the next token in a sequence given all previous tokens. It uses a transformer architecture with many layers of self-attention. During training, it learns statistical patterns from enormous amounts of text. At inference time, it generates text autoregressively one token at a time."
+    },
+    {
+      "segment_id": "seg-reddit-anon-001",
+      "source_name": "Reddit r/MachineLearning — anonymous post",
+      "source_url": "https://reddit.com/r/MachineLearning",
+      "license_class": "CC-BY-SA",
+      "language": "en",
+      "trust_score": 0.38,
+      "content": "IMO the whole AGI timeline debate is overblown. Current LLMs are just fancy autocomplete. They don't understand anything, they just pattern match. People claiming we're close to AGI are either delusional or trying to hype up their investments. Real intelligence requires embodiment and world interaction."
+    },
+    {
+      "segment_id": "seg-blog-ai-predict-001",
+      "source_name": "Anonymous Blog — AI Predictions 2026",
+      "source_url": "https://somerandomblog.io/ai-2026",
+      "license_class": "unknown",
+      "language": "en",
+      "trust_score": 0.25,
+      "content": "AI will definitely replace all programmers by 2026. No more software engineers needed. Companies should start firing their dev teams now and just use ChatGPT for everything. This is going to happen whether we like it or not. Traditional coding is dead."
+    },
+    {
+      "segment_id": "seg-forum-llm-001",
+      "source_name": "Unverified Forum — LLM Discussion",
+      "source_url": "https://forum.example.com/llm-thread",
+      "license_class": "unknown",
+      "language": "en",
+      "trust_score": 0.20,
+      "content": "I heard from a friend who works at Google that GPT-5 is already trained and has human-level reasoning. They're just hiding it because they're scared of the implications. The government knows about it too and is suppressing the information. Wake up people."
+    },
+    {
+      "segment_id": "seg-anon-tech-001",
+      "source_name": "Anonymous Source — Tech Opinions",
+      "source_url": "https://pastebin.com/ai-rant",
+      "license_class": "unknown",
+      "language": "en",
+      "trust_score": 0.15,
+      "content": "All AI companies are lying to you. Their models don't actually work. The demos are all pre-recorded. The benchmarks are rigged. If you actually use these tools in production you'll see they fail constantly and hallucinate constantly. It's all smoke and mirrors."
+    },
+    {
+      "segment_id": "seg-anon-myth-001",
+      "source_name": "Unknown Author — AI Myths",
+      "source_url": "https://unknown.com/ai-myths",
+      "license_class": "unknown",
+      "language": "en",
+      "trust_score": 0.18,
+      "content": "AI doesn't actually learn anything. It just memorizes training data. LLMs are basically Google search with extra steps. There's no real intelligence, just database lookup. Anyone who tells you otherwise is trying to sell you something."
+    },
+    {
+      "segment_id": "seg-wiki-uk-ai-001",
+      "source_name": "Вікіпедія UK — Штучний інтелект",
+      "source_url": "https://uk.wikipedia.org/wiki/%D0%A8%D1%82%D1%83%D1%87%D0%BD%D0%B8%D0%B9_%D1%96%D0%BD%D1%82%D0%B5%D0%BB%D0%B5%D0%BA%D1%82",
+      "license_class": "CC-BY-SA",
+      "language": "uk",
+      "trust_score": 0.94,
+      "content": "Штучний інтелект (ШІ) — галузь інформатики, що займається дослідженням і розробкою теорій, методів і технологій, що імітують або відтворюють інтелектуальні функції людини. Включає задачі розпізнавання образів, обробки природної мови, прийняття рішень та навчання."
+    },
+    {
+      "segment_id": "seg-nan-ml-001",
+      "source_name": "НАН України — Машинне навчання",
+      "source_url": "https://www.nas.gov.ua/research/ml",
+      "license_class": "CC-BY",
+      "language": "uk",
+      "trust_score": 0.89,
+      "content": "Машинне навчання є підгалуззю штучного інтелекту, що зосереджується на розробці алгоритмів, здатних навчатися з даних. Сучасні методи глибокого навчання, зокрема трансформерні архітектури, досягли значних успіхів у задачах обробки тексту, зображень та мовлення."
+    },
+    {
+      "segment_id": "seg-ukrinform-ai-001",
+      "source_name": "Укрінформ — ШІ в Україні",
+      "source_url": "https://www.ukrinform.ua/technology/ai",
+      "license_class": "proprietary",
+      "language": "uk",
+      "trust_score": 0.78,
+      "content": "Україна активно розвиває власні компетенції у сфері штучного інтелекту. Міністерство цифрової трансформації запустило програму підтримки AI-стартапів, а провідні українські університети відкривають спеціалізовані кафедри машинного навчання та науки про дані."
+    },
+    {
+      "segment_id": "seg-rada-digital-001",
+      "source_name": "Верховна Рада — Цифровізація України",
+      "source_url": "https://rada.gov.ua/digital",
+      "license_class": "CC0",
+      "language": "uk",
+      "trust_score": 0.85,
+      "content": "Верховна Рада України ухвалила стратегію цифрової трансформації, яка передбачає широке впровадження технологій штучного інтелекту в державному управлінні, охороні здоров'я та освіті. Ключовим пріоритетом є забезпечення прозорості та підзвітності AI-систем."
+    },
+    {
+      "segment_id": "seg-up-tech-001",
+      "source_name": "Українська правда — Технології та ШІ",
+      "source_url": "https://www.pravda.com.ua/tech/ai",
+      "license_class": "proprietary",
+      "language": "uk",
+      "trust_score": 0.80,
+      "content": "Українські розробники активно використовують великі мовні моделі для автоматизації перекладу, аналізу дезінформації та підтримки волонтерських ініціатив. Проєкт babyloon.ai пропонує інноваційний підхід до прозорості ШІ через систему атрибуції джерел у реальному часі."
+    }
+  ]
+}

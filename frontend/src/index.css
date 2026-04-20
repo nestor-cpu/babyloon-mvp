@@ -1,0 +1,85 @@
+/* ── Google Fonts — must come before @tailwind ────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS custom properties ────────────────────────────────────── */
+:root {
+  --deep-azure:      #1B3A5C;
+  --babylonian-gold: #C5963A;
+  --ink:             #0C1824;
+  --silver:          #E0E8F0;
+  --parchment:       #FAF8F4;
+  --muted-blue:      #5A7A9A;
+
+  --trust-high:   #2E7D32;
+  --trust-medium: #F9A825;
+  --trust-low:    #CC0000;
+}
+
+/* ── Global reset ─────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  background-color: var(--ink);
+  color: var(--silver);
+}
+
+body {
+  margin: 0;
+  background-color: var(--ink);
+  color: var(--silver);
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Typography ───────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  color: var(--silver);
+}
+
+code, pre, .font-mono {
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+}
+
+.tagline {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  color: var(--muted-blue);
+}
+
+/* ── Brand utilities ──────────────────────────────────────────── */
+.btn-gold {
+  background-color: var(--babylonian-gold);
+  color: var(--ink);
+  font-weight: 600;
+  transition: filter 0.15s ease, transform 0.1s ease;
+}
+.btn-gold:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+.btn-outline-gold {
+  border: 1.5px solid var(--babylonian-gold);
+  color: var(--babylonian-gold);
+  background: transparent;
+  transition: background 0.15s ease;
+}
+.btn-outline-gold:hover {
+  background: rgba(197, 150, 58, 0.12);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #0C1824; }
+::-webkit-scrollbar-thumb { background: #1B3A5C; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #C5963A; }

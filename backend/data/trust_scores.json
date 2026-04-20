@@ -1,0 +1,25 @@
+{
+  "segments": {
+    "seg-wikipedia-en-001": 0.95,
+    "seg-wikipedia-en-002": 0.94,
+    "seg-wikipedia-uk-001": 0.96,
+    "seg-arxiv-cs-001": 0.88,
+    "seg-arxiv-ai-001": 0.90,
+    "seg-gutenberg-001": 0.72,
+    "seg-gutenberg-002": 0.70,
+    "seg-cc0-dataset-001": 0.85,
+    "seg-apache-docs-001": 0.82,
+    "seg-mit-licensed-001": 0.80,
+    "seg-pubmed-central-001": 0.87,
+    "seg-stackexchange-001": 0.65,
+    "seg-reddit-filtered-001": 0.35,
+    "seg-lowquality-001": 0.15,
+    "seg-unverified-001": 0.20
+  },
+  "metadata": {
+    "version": "1.0",
+    "exclusion_threshold": 0.3,
+    "updated_at": "2026-04-14T00:00:00Z",
+    "description": "Trust scores for babyloon.ai corpus segments. Scores 0.1-1.0. Segments below 0.3 are excluded from active corpus."
+  }
+}

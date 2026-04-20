@@ -1,0 +1,173 @@
+{
+  "agents": [
+    {
+      "agent_id": "76db1c8e-4b60-40aa-8471-11bea5a2db49",
+      "name": "test_agent",
+      "authorization_level": "L0",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry",
+        "admin"
+      ],
+      "created_at": "2026-04-15T11:14:54.952379+00:00",
+      "expires_at": "2026-05-15T11:14:54.952379+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEJlpwFqb7nPUrqnraOXY91PIxkN/1\nTssLc6DQNHeQK5KscZ7i6bu1m3BLLrTdg2MQzOcfcsrUwPYj8AKPwwMc7A==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "361661fa-ab89-4039-bff2-fed8c69cc05e",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-15T15:41:29.942184+00:00",
+      "expires_at": "2026-04-16T15:41:29.942184+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEtNb988cX1TC/WNu1qUNTUDl/pTRU\nKvueZqK8W4kLa3r0BQshacdvm4RvyxQBti+uU4TPqiYk4VamNBQg5wa1NQ==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "bc173912-d3b5-4b8a-ae1d-a6e0225b9146",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T14:33:08.799162+00:00",
+      "expires_at": "2026-04-20T14:33:08.799162+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEmugP2hlDwPUcQz4fpswomCCBWGY1\nUwVN71PzHSYmv0tZa5KE/xIcWpSvqh5afRZnVNQpw50txsUb8d3Zu2snfA==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "8980cbf7-e767-45e2-8d92-2d7d09999ff1",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T14:33:17.677625+00:00",
+      "expires_at": "2026-04-20T14:33:17.677625+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEopnDDYIJN/G5AL6JYuskDyYtpHCz\nlRKFVZe15wLxKJBcdZ4y05YMBpV+JyiKMdPe+nJCY/kpKEE8j6YWwvTWIg==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "604b9ff0-2848-45c8-8daf-6c53a130280e",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T15:24:19.986091+00:00",
+      "expires_at": "2026-04-20T15:24:19.986091+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAExUwvGbQun0BQEywOSQr0QVG+UQus\nUyFQozMR+mKtZdz5rrDdVgi4x8IOqU9DGU82Bft7g8ZHfJG9m7XAsad+Kg==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "2d54fa63-af99-4941-8b33-97f2a0d8b65e",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T15:42:07.262972+00:00",
+      "expires_at": "2026-04-20T15:42:07.262972+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEGPtx468TNyUgkD/h2gTe4lAtr9uw\n6XoBNYjJe8cOyGtW144NGGTLTqdxUS4mA93+JVMtPm6Xmi9uHOLV0q1org==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "6d52710f-5334-4723-8509-4992217ebbf4",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T16:04:33.840090+00:00",
+      "expires_at": "2026-04-20T16:04:33.840090+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE82ozUoWipbVziHKAAUCw7rXymne1\nNo2B45C/J3sByDnRqKXqQ4aTERPognLfhUMMi81+A9EOpijaZykINz2zwg==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "3b61e250-232b-4c70-9082-4a3fe14769cd",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T16:05:48.889777+00:00",
+      "expires_at": "2026-04-20T16:05:48.889777+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEBdfyiLH5kxQbkMC6bc7rCLYu/E1Y\nB83iSQJ8QZidd7d6nTQYV9kMkgZmrSfOwN/A5O+KRyWa3wFLQzmIi24WLQ==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "6d8a4969-54f4-4174-8735-02029b8edde2",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T16:06:02.405873+00:00",
+      "expires_at": "2026-04-20T16:06:02.405873+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAErVqMReRsX9i0U2Ly7Vmi+fFku3WJ\nGs10SS7tlT9BPgrTycqafMQql1+u/K7uMFVbLYRHBfONmLYs8sfHu5iagQ==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "19a55d34-12ae-4426-b21b-5329a719f8e9",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T16:06:40.808516+00:00",
+      "expires_at": "2026-04-20T16:06:40.808516+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE4S7ow+3ARbD5JizCJ1tsy+4irJo8\nAozS8BQo2m/eLoNsMIderBOKVHndexuLiyhuUkhbnmClwbYuYeArUmtqaw==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "09abff53-0410-4295-8289-1cb9b869ad39",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T16:14:34.570923+00:00",
+      "expires_at": "2026-04-20T16:14:34.570923+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfV/eN2Ww4a9xesKxyYYAmrD7cV34\nb+uNTQ8vePQALa/cwcqsCrMdSqoRM8X2QIdT4kNayn5RYMowBQEbzdCmzg==\n-----END PUBLIC KEY-----\n"
+    },
+    {
+      "agent_id": "ec7bd0df-cbdf-4c15-b836-7b2ff6ed5d58",
+      "name": "E2E-Test-Agent",
+      "authorization_level": "L1",
+      "allowed_operations": [
+        "generate",
+        "manifest",
+        "registry"
+      ],
+      "created_at": "2026-04-19T17:45:46.410685+00:00",
+      "expires_at": "2026-04-20T17:45:46.410685+00:00",
+      "is_active": true,
+      "public_key_pem": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/5ixs91xTHHfCF5vzY0jpQm+ieCp\ntSzqqMnAsin09JY4qzh7+x9L3zaLyt62qI5QsxVPqzmQCrL/lY7DEnOO9w==\n-----END PUBLIC KEY-----\n"
+    }
+  ]
+}

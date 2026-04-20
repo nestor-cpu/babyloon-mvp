@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/data:/app/data
+    environment:
+      - DATA_DIR=data
+      - LOAD_MODEL=0        # Set to 1 on GPU server
+      - HF_TOKEN=${HF_TOKEN}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  # Optional: run tests inside container
+  tests:
+    build: .
+    command: pytest tests/ -v --tb=short
+    volumes:
+      - ./backend/data:/app/data
+    profiles: ["test"]
