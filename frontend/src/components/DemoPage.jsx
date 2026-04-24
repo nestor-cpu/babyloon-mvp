@@ -411,31 +411,56 @@ function MetricRow({ label, value, color = "#E0E8F0" }) {
 
 /**
  * tokensToWords — aggregate per-token provenance into word-level units.
- * Tokens that start with a space (or Sentencepiece ▁) begin a new word.
- * trust_avg is re-averaged over constituent tokens.
- * attribution is the flat union of all token attributions.
+ *
+ * Strategy: join all token texts into one string, split into word segments
+ * with a regex, then map each word back to its source tokens by character
+ * position. This is robust regardless of whether individual tokens carry
+ * leading spaces (Mistral/SentencePiece decoded in isolation often don't).
+ *
+ * trust_avg = average of constituent token trust scores.
+ * attribution = flat union of all token attributions.
  */
 function tokensToWords(tokens) {
+  if (!tokens.length) return [];
+
+  // Build a character-position index over all tokens.
+  let charPos = 0;
+  const ranged = tokens.map((token) => {
+    const start = charPos;
+    charPos += token.text.length;
+    return { token, start, end: charPos };
+  });
+
+  // Full response text.
+  const fullText = tokens.map((t) => t.text).join("");
+
+  // Split into non-whitespace segments (words + punctuation clusters).
+  // \S+ captures the word; the optional \s* is NOT captured so we only
+  // store the printable text — the space between words is rendered by JSX.
+  const wordRe = /\S+/g;
   const words = [];
-  let currentWord = { text: "", tokens: [] };
+  let match;
 
-  for (const token of tokens) {
-    const t = token.text;
-    if (t.startsWith(" ") || t.startsWith("▁") || currentWord.tokens.length === 0) {
-      if (currentWord.tokens.length > 0) words.push(currentWord);
-      currentWord = { text: t.trimStart(), tokens: [token] };
-    } else {
-      currentWord.text += t;
-      currentWord.tokens.push(token);
-    }
+  while ((match = wordRe.exec(fullText)) !== null) {
+    const wStart = match.index;
+    const wEnd   = wStart + match[0].length;
+
+    // All tokens whose character range overlaps this word.
+    const wordTokens = ranged
+      .filter((r) => r.start < wEnd && r.end > wStart)
+      .map((r) => r.token);
+
+    if (wordTokens.length === 0) continue;
+
+    words.push({
+      text:        match[0],
+      tokens:      wordTokens,
+      trust_avg:   wordTokens.reduce((s, t) => s + (t.trust_avg ?? 0), 0) / wordTokens.length,
+      attribution: wordTokens.flatMap((t) => t.attribution ?? []),
+    });
   }
-  if (currentWord.tokens.length > 0) words.push(currentWord);
 
-  return words.map((w) => ({
-    ...w,
-    trust_avg:   w.tokens.reduce((s, t) => s + (t.trust_avg ?? 0), 0) / w.tokens.length,
-    attribution: w.tokens.flatMap((t) => t.attribution ?? []),
-  }));
+  return words;
 }
 
 /** Trust → subtle background color for Reader View. */
@@ -542,15 +567,21 @@ function ReaderView({ tokens = [] }) {
           <div
             className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-4 text-sm pointer-events-none"
             style={{
-              position: "fixed",
-              zIndex:   9999,
-              top:      popupTop,
-              left:     popupLeft,
-              width:    POPUP_W,
+              position:  "fixed",
+              zIndex:    9999,
+              top:       popupTop,
+              left:      popupLeft,
+              width:     POPUP_W,
+              maxHeight: "320px",
+              overflowY: "auto",
             }}
           >
-            <div className="font-mono text-gray-400 text-xs mb-2">
-              Word: <span className="text-white font-semibold">"{hoveredWord.text}"</span>
+            <div className="font-mono text-gray-400 text-xs mb-2 truncate">
+              Word: <span className="text-white font-semibold">
+                "{hoveredWord.text.length > 30
+                    ? hoveredWord.text.slice(0, 30) + "…"
+                    : hoveredWord.text}"
+              </span>
               <span className="ml-2 text-gray-600">
                 {hoveredWord.tokens.length} token{hoveredWord.tokens.length !== 1 ? "s" : ""}
               </span>
