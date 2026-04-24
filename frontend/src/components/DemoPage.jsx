@@ -297,7 +297,7 @@ export default function DemoPage() {
 
           {/* CENTER: Response panel */}
           <div className="lg:col-span-5">
-            <div className="rounded-xl p-5 min-h-96" style={{ background: "rgba(27,58,92,0.12)", border: "1px solid rgba(27,58,92,0.35)" }}>
+            <div className="rounded-xl p-5 min-h-96" style={{ background: "rgba(27,58,92,0.12)", border: "1px solid rgba(27,58,92,0.35)", overflow: "hidden" }}>
 
               {/* Panel header: title + legend + Reader/Expert toggle */}
               <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
@@ -506,16 +506,25 @@ function ReaderView({ tokens = [] }) {
   return (
     <div className="relative">
       {/* Flowing readable text */}
-      <div className="leading-8 text-base" style={{ color: "#E0E8F0" }}>
+      <div
+        className="leading-8 text-base"
+        style={{
+          color:        "#E0E8F0",
+          whiteSpace:   "normal",
+          wordBreak:    "break-word",
+          overflowWrap: "break-word",
+          maxWidth:     "100%",
+        }}
+      >
         {words.map((word, idx) => (
           <span
             key={idx}
             className="cursor-default rounded px-0.5 transition-all duration-100"
             style={{
-              background:   readerBg(word.trust_avg),
-              boxShadow:    hoveredIdx === idx ? `0 0 0 1px ${trustDotColor(word.trust_avg)}44` : "none",
-              display:      "inline",
-              whiteSpace:   "pre-wrap",
+              background: readerBg(word.trust_avg),
+              boxShadow:  hoveredIdx === idx ? `0 0 0 1px ${trustDotColor(word.trust_avg)}44` : "none",
+              display:    "inline",
+              whiteSpace: "normal",
             }}
             onMouseEnter={(e) => handleMouseEnter(idx, e)}
             onMouseLeave={() => setHoveredIdx(null)}
