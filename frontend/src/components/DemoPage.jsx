@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import TokenViewer from "./TokenViewer";
 import ManifestPanel from "./ManifestPanel";
 import ChainViewer from "./ChainViewer";
@@ -517,20 +517,21 @@ function ReaderView({ tokens = [] }) {
         }}
       >
         {words.map((word, idx) => (
-          <span
-            key={idx}
-            className="cursor-default rounded px-0.5 transition-all duration-100"
-            style={{
-              background: readerBg(word.trust_avg),
-              boxShadow:  hoveredIdx === idx ? `0 0 0 1px ${trustDotColor(word.trust_avg)}44` : "none",
-              display:    "inline",
-              whiteSpace: "normal",
-            }}
-            onMouseEnter={(e) => handleMouseEnter(idx, e)}
-            onMouseLeave={() => setHoveredIdx(null)}
-          >
-            {word.text}{" "}
-          </span>
+          <Fragment key={idx}>
+            <span
+              className="cursor-default rounded px-0.5 transition-all duration-100"
+              style={{
+                background: readerBg(word.trust_avg),
+                boxShadow:  hoveredIdx === idx ? `0 0 0 1px ${trustDotColor(word.trust_avg)}44` : "none",
+                display:    "inline",
+                whiteSpace: "normal",
+              }}
+              onMouseEnter={(e) => handleMouseEnter(idx, e)}
+              onMouseLeave={() => setHoveredIdx(null)}
+            >
+              {word.text}
+            </span>{" "}
+          </Fragment>
         ))}
       </div>
 
