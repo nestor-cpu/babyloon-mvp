@@ -362,7 +362,7 @@ export default function DemoPage() {
 
               {result && !loading && (
                 viewMode === "reader"
-                  ? <ReaderView tokens={result.tokens} />
+                  ? <ReaderView tokens={result.tokens} outputText={result.output_text} />
                   : <TokenViewer tokens={result.tokens} />
               )}
 
@@ -412,54 +412,79 @@ function MetricRow({ label, value, color = "#E0E8F0" }) {
 /**
  * tokensToWords — aggregate per-token provenance into word-level units.
  *
- * Strategy: join all token texts into one string, split into word segments
- * with a regex, then map each word back to its source tokens by character
- * position. This is robust regardless of whether individual tokens carry
- * leading spaces (Mistral/SentencePiece decoded in isolation often don't).
+ * ROOT CAUSE: Mistral/SentencePiece tokenizer, when decoding a single token
+ * in isolation (tokenizer.decode([id])), drops the leading space that would
+ * appear in a full-sequence decode. So joining token.text produces a string
+ * with no spaces ("TheEuropeanUnion…"), while outputText from the backend
+ * ("The European Union…") has correct whitespace.
  *
- * trust_avg = average of constituent token trust scores.
- * attribution = flat union of all token attributions.
+ * STRATEGY (outputText path — primary):
+ *   1. Build a char-position index over the spaceless fullText.
+ *   2. For each word in outputText (has real spaces), find that word's
+ *      character run inside fullText via sequential indexOf.
+ *   3. Map the found range to token(s) by char-range overlap.
+ *
+ * FALLBACK (no outputText): split fullText directly — works for Gemma/GGUF
+ * adapters that do return spaces in individual token texts.
  */
-function tokensToWords(tokens) {
+function tokensToWords(tokens, outputText) {
   if (!tokens.length) return [];
 
-  // Build a character-position index over all tokens.
+  // Build char-position index over concatenated token texts (no spaces).
   let charPos = 0;
   const ranged = tokens.map((token) => {
     const start = charPos;
     charPos += token.text.length;
     return { token, start, end: charPos };
   });
-
-  // Full response text.
   const fullText = tokens.map((t) => t.text).join("");
 
-  // Split into non-whitespace segments (words + punctuation clusters).
-  // \S+ captures the word; the optional \s* is NOT captured so we only
-  // store the printable text — the space between words is rendered by JSX.
-  const wordRe = /\S+/g;
-  const words = [];
-  let match;
-
-  while ((match = wordRe.exec(fullText)) !== null) {
-    const wStart = match.index;
-    const wEnd   = wStart + match[0].length;
-
-    // All tokens whose character range overlaps this word.
+  function makeWord(wordText, wStart, wEnd) {
     const wordTokens = ranged
       .filter((r) => r.start < wEnd && r.end > wStart)
       .map((r) => r.token);
-
-    if (wordTokens.length === 0) continue;
-
-    words.push({
-      text:        match[0],
+    if (!wordTokens.length) return null;
+    return {
+      text:        wordText,
       tokens:      wordTokens,
       trust_avg:   wordTokens.reduce((s, t) => s + (t.trust_avg ?? 0), 0) / wordTokens.length,
       attribution: wordTokens.flatMap((t) => t.attribution ?? []),
-    });
+    };
   }
 
+  // ── Primary path: use outputText for correct word boundaries ────────────
+  if (outputText && outputText.trim().length > 0) {
+    const words   = [];
+    let searchFrom = 0;           // advance through fullText sequentially
+    const wordRe   = /\S+/g;
+    let match;
+
+    while ((match = wordRe.exec(outputText)) !== null) {
+      const wordText = match[0];
+      // Find this exact string in fullText starting after the previous word.
+      const pos = fullText.indexOf(wordText, searchFrom);
+      if (pos === -1) continue;   // shouldn't happen; skip gracefully
+      const wEnd = pos + wordText.length;
+      searchFrom = wEnd;
+
+      const w = makeWord(wordText, pos, wEnd);
+      if (w) words.push(w);
+    }
+
+    if (words.length > 0) return words;
+    // Fall through if outputText produced nothing (e.g. encoding mismatch)
+  }
+
+  // ── Fallback: split fullText directly (works when tokens carry spaces) ──
+  const words  = [];
+  const wordRe = /\S+/g;
+  let match;
+  while ((match = wordRe.exec(fullText)) !== null) {
+    const wStart = match.index;
+    const wEnd   = wStart + match[0].length;
+    const w = makeWord(match[0], wStart, wEnd);
+    if (w) words.push(w);
+  }
   return words;
 }
 
@@ -482,13 +507,13 @@ function trustDotColor(trust) {
  * Each word is highlighted by its aggregated trust score.
  * Hover → popup with aggregated attribution (same style as TokenViewer).
  */
-function ReaderView({ tokens = [] }) {
+function ReaderView({ tokens = [], outputText = "" }) {
   const [hoveredIdx, setHoveredIdx]   = useState(null);
   const [popupPos,   setPopupPos]     = useState({ x: 0, y: 0 });
 
   if (!tokens.length) return null;
 
-  const words = tokensToWords(tokens);
+  const words = tokensToWords(tokens, outputText);
 
   const POPUP_W = 292;
   const POPUP_H = 300;
