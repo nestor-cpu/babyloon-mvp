@@ -19,11 +19,13 @@ const MODEL_OPTIONS = [
   { value: "gemma-4-e4b",  label: "Gemma 4 E4B",       sub: "Edge / Mobile · 128K ctx",     thinking: true  },
 ];
 
-const SAMPLE_PROMPTS = [
-  "What is the capital of France?",
-  "Explain how neural networks learn.",
-  "What are the main causes of World War I?",
-  "How does HTTPS encryption work?",
+// ── TASK 2: updated sample queries ──────────────────────────────────────────
+const SAMPLE_QUERIES = [
+  "What are the legal requirements for AI transparency under EU AI Act?",
+  "Explain the risks of deploying unverified AI in healthcare",
+  "How does provenance attribution work in language models?",
+  "Що таке babyloon.ai?",
+  "Які вимоги до прозорості ШІ в Євросоюзі?",
 ];
 
 export default function DemoPage() {
@@ -35,6 +37,8 @@ export default function DemoPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showCompare, setShowCompare] = useState(false);
+  // ── TASK 1: view mode — Reader is default ────────────────────────────────
+  const [viewMode, setViewMode] = useState("reader");
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -199,16 +203,16 @@ export default function DemoPage() {
               </h3>
 
               <div className="space-y-1 mb-3">
-                {SAMPLE_PROMPTS.map((p) => (
+                {SAMPLE_QUERIES.map((q) => (
                   <button
-                    key={p}
-                    onClick={() => setPrompt(p)}
+                    key={q}
+                    onClick={() => setPrompt(q)}
                     className="w-full text-left text-xs px-2 py-1.5 rounded transition-colors"
                     style={{ background: "rgba(27,58,92,0.25)", color: "#5A7A9A" }}
                     onMouseEnter={(e) => e.currentTarget.style.color = "#E0E8F0"}
                     onMouseLeave={(e) => e.currentTarget.style.color = "#5A7A9A"}
                   >
-                    {p}
+                    {q}
                   </button>
                 ))}
               </div>
@@ -291,26 +295,60 @@ export default function DemoPage() {
             )}
           </div>
 
-          {/* CENTER: Token viewer */}
+          {/* CENTER: Response panel */}
           <div className="lg:col-span-5">
             <div className="rounded-xl p-5 min-h-96" style={{ background: "rgba(27,58,92,0.12)", border: "1px solid rgba(27,58,92,0.35)" }}>
-              <div className="flex items-center justify-between mb-4">
+
+              {/* Panel header: title + legend + Reader/Expert toggle */}
+              <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
                 <h3 className="font-serif font-semibold" style={{ color: "#E0E8F0" }}>
                   Response with Provenance
                 </h3>
-                <div className="flex gap-3 text-xs" style={{ color: "#5A7A9A" }}>
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: "#2E7D32" }} />
-                    trust ≥ 0.8
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: "#F9A825" }} />
-                    0.5–0.8
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full inline-block" style={{ background: "#CC0000" }} />
-                    &lt; 0.5
-                  </span>
+
+                <div className="flex items-center gap-3">
+                  {/* Trust legend */}
+                  <div className="flex gap-2 text-xs" style={{ color: "#5A7A9A" }}>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full inline-block" style={{ background: "#2E7D32" }} />
+                      ≥ 0.8
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full inline-block" style={{ background: "#F9A825" }} />
+                      0.5–0.8
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full inline-block" style={{ background: "#CC0000" }} />
+                      &lt; 0.5
+                    </span>
+                  </div>
+
+                  {/* Reader / Expert toggle */}
+                  <div className="flex items-center rounded-lg overflow-hidden border text-xs"
+                       style={{ borderColor: "rgba(27,58,92,0.5)" }}>
+                    <button
+                      onClick={() => setViewMode("reader")}
+                      className="px-3 py-1.5 transition-colors font-sans"
+                      style={{
+                        background: viewMode === "reader" ? "rgba(197,150,58,0.18)" : "transparent",
+                        color:      viewMode === "reader" ? "#C5963A" : "#5A7A9A",
+                        fontWeight: viewMode === "reader" ? "600" : "400",
+                      }}
+                    >
+                      Reader
+                    </button>
+                    <button
+                      onClick={() => setViewMode("expert")}
+                      className="px-3 py-1.5 transition-colors font-sans border-l"
+                      style={{
+                        background:  viewMode === "expert" ? "rgba(197,150,58,0.18)" : "transparent",
+                        color:       viewMode === "expert" ? "#C5963A" : "#5A7A9A",
+                        fontWeight:  viewMode === "expert" ? "600" : "400",
+                        borderColor: "rgba(27,58,92,0.5)",
+                      }}
+                    >
+                      Expert
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -323,7 +361,9 @@ export default function DemoPage() {
               )}
 
               {result && !loading && (
-                <TokenViewer tokens={result.tokens} />
+                viewMode === "reader"
+                  ? <ReaderView tokens={result.tokens} />
+                  : <TokenViewer tokens={result.tokens} />
               )}
 
               {!result && !loading && (
@@ -357,12 +397,206 @@ export default function DemoPage() {
   );
 }
 
+// ── Helper components ────────────────────────────────────────────────────────
+
 function MetricRow({ label, value, color = "#E0E8F0" }) {
   return (
     <div className="flex justify-between items-center py-1.5 border-b text-sm"
          style={{ borderColor: "rgba(27,58,92,0.3)" }}>
       <span style={{ color: "#5A7A9A" }}>{label}</span>
       <span className="font-mono font-semibold" style={{ color }}>{value}</span>
+    </div>
+  );
+}
+
+/**
+ * tokensToWords — aggregate per-token provenance into word-level units.
+ * Tokens that start with a space (or Sentencepiece ▁) begin a new word.
+ * trust_avg is re-averaged over constituent tokens.
+ * attribution is the flat union of all token attributions.
+ */
+function tokensToWords(tokens) {
+  const words = [];
+  let currentWord = { text: "", tokens: [] };
+
+  for (const token of tokens) {
+    const t = token.text;
+    if (t.startsWith(" ") || t.startsWith("▁") || currentWord.tokens.length === 0) {
+      if (currentWord.tokens.length > 0) words.push(currentWord);
+      currentWord = { text: t.trimStart(), tokens: [token] };
+    } else {
+      currentWord.text += t;
+      currentWord.tokens.push(token);
+    }
+  }
+  if (currentWord.tokens.length > 0) words.push(currentWord);
+
+  return words.map((w) => ({
+    ...w,
+    trust_avg:   w.tokens.reduce((s, t) => s + (t.trust_avg ?? 0), 0) / w.tokens.length,
+    attribution: w.tokens.flatMap((t) => t.attribution ?? []),
+  }));
+}
+
+/** Trust → subtle background color for Reader View. */
+function readerBg(trust) {
+  if (trust >= 0.8) return "rgba(46, 125, 50, 0.15)";
+  if (trust >= 0.5) return "rgba(249, 168, 37, 0.15)";
+  return "rgba(204, 0, 0, 0.15)";
+}
+
+/** Trust → dot color (reused in popup). */
+function trustDotColor(trust) {
+  if (trust >= 0.8) return "#2E7D32";
+  if (trust >= 0.5) return "#F9A825";
+  return "#CC0000";
+}
+
+/**
+ * ReaderView — renders model output as flowing readable text.
+ * Each word is highlighted by its aggregated trust score.
+ * Hover → popup with aggregated attribution (same style as TokenViewer).
+ */
+function ReaderView({ tokens = [] }) {
+  const [hoveredIdx, setHoveredIdx]   = useState(null);
+  const [popupPos,   setPopupPos]     = useState({ x: 0, y: 0 });
+
+  if (!tokens.length) return null;
+
+  const words = tokensToWords(tokens);
+
+  const POPUP_W = 292;
+  const POPUP_H = 300;
+  const MARGIN  = 8;
+
+  function handleMouseEnter(idx, e) {
+    setHoveredIdx(idx);
+    setPopupPos({ x: e.clientX, y: e.clientY });
+  }
+
+  const popupLeft = Math.min(
+    popupPos.x + 12,
+    window.innerWidth - POPUP_W - MARGIN,
+  );
+  const popupTop =
+    popupPos.y + 16 + POPUP_H > window.innerHeight
+      ? Math.max(MARGIN, popupPos.y - POPUP_H - 8)
+      : popupPos.y + 16;
+
+  const hoveredWord = hoveredIdx !== null ? words[hoveredIdx] : null;
+
+  // Aggregate attribution by source_name (sum weights across constituent tokens)
+  function aggregateAttribution(attribution) {
+    const map = new Map();
+    for (const a of attribution) {
+      const key = a.source_name;
+      if (!map.has(key)) {
+        map.set(key, { ...a, weight: 0 });
+      }
+      map.get(key).weight += a.weight ?? 0;
+    }
+    // Normalise weights so they sum to ≤ 1
+    const entries = [...map.values()];
+    const total   = entries.reduce((s, e) => s + e.weight, 0);
+    return total > 0
+      ? entries.map((e) => ({ ...e, weight: e.weight / total })).sort((a, b) => b.weight - a.weight)
+      : entries;
+  }
+
+  return (
+    <div className="relative">
+      {/* Flowing readable text */}
+      <div className="leading-8 text-base" style={{ color: "#E0E8F0" }}>
+        {words.map((word, idx) => (
+          <span
+            key={idx}
+            className="cursor-default rounded px-0.5 transition-all duration-100"
+            style={{
+              background:   readerBg(word.trust_avg),
+              boxShadow:    hoveredIdx === idx ? `0 0 0 1px ${trustDotColor(word.trust_avg)}44` : "none",
+              display:      "inline",
+              whiteSpace:   "pre-wrap",
+            }}
+            onMouseEnter={(e) => handleMouseEnter(idx, e)}
+            onMouseLeave={() => setHoveredIdx(null)}
+          >
+            {word.text}{" "}
+          </span>
+        ))}
+      </div>
+
+      {/* Hover popup — same visual style as TokenViewer popup */}
+      {hoveredWord && hoveredWord.attribution?.length > 0 && (() => {
+        const aggr = aggregateAttribution(hoveredWord.attribution);
+        return (
+          <div
+            className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-4 text-sm pointer-events-none"
+            style={{
+              position: "fixed",
+              zIndex:   9999,
+              top:      popupTop,
+              left:     popupLeft,
+              width:    POPUP_W,
+            }}
+          >
+            <div className="font-mono text-gray-400 text-xs mb-2">
+              Word: <span className="text-white font-semibold">"{hoveredWord.text}"</span>
+              <span className="ml-2 text-gray-600">
+                {hoveredWord.tokens.length} token{hoveredWord.tokens.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+
+            <div className="mb-2 flex items-center gap-2">
+              <span
+                className="border rounded px-1.5 py-0.5 font-mono text-xs"
+                style={{
+                  background:  hoveredWord.trust_avg >= 0.8 ? "rgba(46,125,50,0.6)"   : hoveredWord.trust_avg >= 0.5 ? "rgba(249,168,37,0.6)"  : "rgba(204,0,0,0.6)",
+                  borderColor: hoveredWord.trust_avg >= 0.8 ? "#2E7D32"               : hoveredWord.trust_avg >= 0.5 ? "#F9A825"               : "#CC0000",
+                  color:       hoveredWord.trust_avg >= 0.8 ? "#A5D6A7"               : hoveredWord.trust_avg >= 0.5 ? "#FFE082"               : "#EF9A9A",
+                }}
+              >
+                trust {(hoveredWord.trust_avg * 100).toFixed(0)}%
+              </span>
+              <span className="text-xs" style={{ color: "#5A7A9A" }}>aggregated</span>
+            </div>
+
+            <div className="space-y-2">
+              {aggr.slice(0, 5).map((attr, i) => (
+                <div key={i} className="bg-gray-800 rounded-lg px-3 py-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-white font-semibold text-xs truncate max-w-36">
+                      {attr.source_name}
+                    </span>
+                    <span className="text-indigo-300 font-mono text-xs">
+                      {(attr.weight * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="flex gap-2 text-xs text-gray-400">
+                    <span className="bg-gray-700 px-1.5 py-0.5 rounded text-xs">
+                      {attr.license_class}
+                    </span>
+                    <span
+                      className="border rounded px-1.5 py-0.5 font-mono text-xs"
+                      style={{
+                        background:  (attr.trust_score ?? 0) >= 0.8 ? "rgba(46,125,50,0.4)"  : (attr.trust_score ?? 0) >= 0.5 ? "rgba(249,168,37,0.4)"  : "rgba(204,0,0,0.4)",
+                        borderColor: (attr.trust_score ?? 0) >= 0.8 ? "#2E7D32"              : (attr.trust_score ?? 0) >= 0.5 ? "#F9A825"               : "#CC0000",
+                        color:       (attr.trust_score ?? 0) >= 0.8 ? "#A5D6A7"              : (attr.trust_score ?? 0) >= 0.5 ? "#FFE082"               : "#EF9A9A",
+                      }}
+                    >
+                      trust {((attr.trust_score ?? 0) * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+              {aggr.length > 5 && (
+                <p className="text-xs text-center" style={{ color: "#1B3A5C" }}>
+                  +{aggr.length - 5} more sources
+                </p>
+              )}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
