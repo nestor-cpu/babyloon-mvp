@@ -138,7 +138,7 @@ export default function CompareView({ prompt: initialPrompt = "" }) {
             <h3 className="font-serif font-semibold" style={{ color: "#E0E8F0" }}>
               Babylon<span style={{ color: "#C5963A" }}>∞</span>n.ai
             </h3>
-            <span className="tagline text-xs ml-1" style={{ color: "#5A7A9A" }}>Full Provenance</span>
+            <span className="tagline text-xs ml-1" style={{ color: "#5A7A9A" }}>where every token knows its origin</span>
           </div>
 
           {rightResult ? (

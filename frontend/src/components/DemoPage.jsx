@@ -93,11 +93,9 @@ export default function DemoPage() {
   return (
     <div className="min-h-screen" style={{ background: "#0C1824", color: "#E0E8F0" }}>
 
-      {/* Header */}
-      <header className="border-b px-6 py-3 flex items-center gap-4"
+      {/* Sub-header — Compare View toggle only (logo lives in the global navbar) */}
+      <header className="border-b px-6 py-3 flex items-center"
               style={{ borderColor: "rgba(27,58,92,0.5)" }}>
-        <img src="/logo-dark.png" alt="Babylon∞n.ai" className="h-7 w-auto" />
-        <span className="text-sm tagline" style={{ color: "#5A7A9A" }}>Live Provenance Demo</span>
         <div className="ml-auto flex gap-2">
           <button
             onClick={() => setShowCompare(!showCompare)}
