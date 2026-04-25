@@ -82,7 +82,7 @@ export default function TokenViewer({ tokens = [] }) {
                 ${colorClass}
                 ${hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : ""}
               `}
-              style={{ userSelect: "text" }}
+              style={{ userSelect: "text", whiteSpace: "pre" }}
               onMouseEnter={(e) => handleMouseEnter(idx, e)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
