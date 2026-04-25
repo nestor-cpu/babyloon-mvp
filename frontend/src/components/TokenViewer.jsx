@@ -1,17 +1,14 @@
-import { useState, Fragment } from "react";
+import { useState } from "react";
 
 /**
  * TokenViewer — renders model output token-by-token, color-coded by trust score.
- * Expert View: each token is a separate highlighted pill.
+ * Expert View: each token is a highlighted pill.
  * Hover on any token → popup with source, weight, license, trust score.
  *
- * Space / subword logic:
- *   Mistral/SentencePiece tokens that begin a new word carry a leading " " or "▁".
- *   We strip that prefix from the displayed text and render it as a bare text node
- *   BEFORE the span — so:
- *     (a) Copy-paste includes the space (it's a real DOM text node, not CSS margin).
- *     (b) Continuation tokens ("ific", "ness") appear flush against the previous
- *         token inside the same word — no false gap mid-word.
+ * Copy behaviour:
+ *   token.text (original, including any leading " " or "▁") is placed directly
+ *   inside the <span>. The browser's native selection + Ctrl+C then copies the
+ *   full text with correct spacing — no onCopy handler or data-raw tricks needed.
  *
  * Props:
  *   tokens: TokenProvenance[] from /generate response
@@ -54,27 +51,6 @@ export default function TokenViewer({ tokens = [] }) {
       ? Math.max(MARGIN, popupPos.y - POPUP_H - 8)
       : popupPos.y + 16;
 
-  // onCopy: reconstruct original text (with proper spaces) from data-raw attributes
-  // of selected token spans, bypassing the DOM text nodes that browsers may mangle.
-  function handleCopy(e) {
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) return;
-
-    const container = e.currentTarget;
-    const spans = container.querySelectorAll("[data-raw]");
-    let text = "";
-    for (const span of spans) {
-      if (selection.containsNode(span, true)) {
-        text += span.getAttribute("data-raw"); // original token.text, spaces included
-      }
-    }
-
-    if (text) {
-      e.preventDefault();
-      e.clipboardData.setData("text/plain", text.trim());
-    }
-  }
-
   function getLicensePurity(attribution = []) {
     const clean = new Set(["CC0", "public-domain", "Apache-2.0", "MIT", "CC-BY", "CC-BY-SA"]);
     const totalW = attribution.reduce((s, a) => s + (a.weight ?? 0), 0);
@@ -91,46 +67,31 @@ export default function TokenViewer({ tokens = [] }) {
       <div
         className="leading-relaxed text-base"
         style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
-        onCopy={handleCopy}
       >
         {tokens.map((token, idx) => {
           const trust = token.trust_avg ?? 0;
           const colorClass = getTrustColor(trust);
           const dotClass   = getTrustDot(trust);
 
-          const raw = token.text ?? "";
-
-          // A token starts a new word when it carries a leading space or ▁.
-          // The first token never gets a leading separator.
-          const isWordStart = raw.startsWith(" ") || raw.startsWith("▁");
-
-          // Strip the leading space / ▁ from display — it becomes a text node.
-          const display = raw.replace(/^[ ▁]+/, "") || raw;
-
           return (
-            <Fragment key={idx}>
-              {/* Word-separator: text node so copy-paste preserves spaces */}
-              {idx > 0 && isWordStart && " "}
-
+            <span
+              key={idx}
+              className={`
+                inline-block relative cursor-default px-0.5 py-0.5 rounded
+                border transition-all duration-150
+                ${colorClass}
+                ${hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : ""}
+              `}
+              style={{ userSelect: "text" }}
+              onMouseEnter={(e) => handleMouseEnter(idx, e)}
+              onMouseLeave={() => setHoveredIdx(null)}
+            >
+              {token.text || " "}
+              {/* tiny trust dot */}
               <span
-                data-raw={raw}
-                className={`
-                  inline-block relative cursor-default px-0.5 py-0.5 rounded
-                  border transition-all duration-150
-                  ${colorClass}
-                  ${hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : ""}
-                `}
-                style={{ userSelect: "text" }}
-                onMouseEnter={(e) => handleMouseEnter(idx, e)}
-                onMouseLeave={() => setHoveredIdx(null)}
-              >
-                {display}
-                {/* tiny trust dot */}
-                <span
-                  className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`}
-                />
-              </span>
-            </Fragment>
+                className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`}
+              />
+            </span>
           );
         })}
       </div>
