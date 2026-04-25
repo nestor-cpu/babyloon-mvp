@@ -54,6 +54,27 @@ export default function TokenViewer({ tokens = [] }) {
       ? Math.max(MARGIN, popupPos.y - POPUP_H - 8)
       : popupPos.y + 16;
 
+  // onCopy: reconstruct original text (with proper spaces) from data-raw attributes
+  // of selected token spans, bypassing the DOM text nodes that browsers may mangle.
+  function handleCopy(e) {
+    const selection = window.getSelection();
+    if (!selection || selection.isCollapsed) return;
+
+    const container = e.currentTarget;
+    const spans = container.querySelectorAll("[data-raw]");
+    let text = "";
+    for (const span of spans) {
+      if (selection.containsNode(span, true)) {
+        text += span.getAttribute("data-raw"); // original token.text, spaces included
+      }
+    }
+
+    if (text) {
+      e.preventDefault();
+      e.clipboardData.setData("text/plain", text.trim());
+    }
+  }
+
   function getLicensePurity(attribution = []) {
     const clean = new Set(["CC0", "public-domain", "Apache-2.0", "MIT", "CC-BY", "CC-BY-SA"]);
     const totalW = attribution.reduce((s, a) => s + (a.weight ?? 0), 0);
@@ -70,6 +91,7 @@ export default function TokenViewer({ tokens = [] }) {
       <div
         className="leading-relaxed text-base"
         style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+        onCopy={handleCopy}
       >
         {tokens.map((token, idx) => {
           const trust = token.trust_avg ?? 0;
@@ -91,6 +113,7 @@ export default function TokenViewer({ tokens = [] }) {
               {idx > 0 && isWordStart && " "}
 
               <span
+                data-raw={raw}
                 className={`
                   inline-block relative cursor-default px-0.5 py-0.5 rounded
                   border transition-all duration-150
