@@ -1,8 +1,17 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 
 /**
- * TokenViewer — renders model output word by word, color-coded by trust score.
- * Hover on any word → popup with source, weight, license, trust score.
+ * TokenViewer — renders model output token-by-token, color-coded by trust score.
+ * Expert View: each token is a separate highlighted pill.
+ * Hover on any token → popup with source, weight, license, trust score.
+ *
+ * Space / subword logic:
+ *   Mistral/SentencePiece tokens that begin a new word carry a leading " " or "▁".
+ *   We strip that prefix from the displayed text and render it as a bare text node
+ *   BEFORE the span — so:
+ *     (a) Copy-paste includes the space (it's a real DOM text node, not CSS margin).
+ *     (b) Continuation tokens ("ific", "ness") appear flush against the previous
+ *         token inside the same word — no false gap mid-word.
  *
  * Props:
  *   tokens: TokenProvenance[] from /generate response
@@ -25,32 +34,26 @@ export default function TokenViewer({ tokens = [] }) {
     return "bg-red-400";
   }
 
-  // Popup dimensions (w-72 = 288 px; height varies with attribution count).
-  // Use a generous height estimate for the bottom-overflow guard.
-  const POPUP_W   = 292;
-  const POPUP_H   = 300;
-  const MARGIN    = 8;   // px gap from viewport edges
+  const POPUP_W = 292;
+  const POPUP_H = 300;
+  const MARGIN  = 8;
 
   function handleMouseEnter(idx, e) {
     setHoveredIdx(idx);
-    // clientX/Y are viewport-relative — correct for position:fixed.
-    // Do NOT add window.scrollY; that would push the popup off-screen when scrolled.
     setPopupPos({ x: e.clientX, y: e.clientY });
   }
 
   const hoveredToken = hoveredIdx !== null ? tokens[hoveredIdx] : null;
 
-  // Compute clamped popup coordinates so it stays fully inside the viewport.
   const popupLeft = Math.min(
     popupPos.x + 12,
     window.innerWidth - POPUP_W - MARGIN,
   );
   const popupTop =
     popupPos.y + 16 + POPUP_H > window.innerHeight
-      ? Math.max(MARGIN, popupPos.y - POPUP_H - 8)  // flip above cursor
-      : popupPos.y + 16;                              // default: below cursor
+      ? Math.max(MARGIN, popupPos.y - POPUP_H - 8)
+      : popupPos.y + 16;
 
-  // Compute license purity from attribution list (clean licenses / total weight)
   function getLicensePurity(attribution = []) {
     const clean = new Set(["CC0", "public-domain", "Apache-2.0", "MIT", "CC-BY", "CC-BY-SA"]);
     const totalW = attribution.reduce((s, a) => s + (a.weight ?? 0), 0);
@@ -64,35 +67,52 @@ export default function TokenViewer({ tokens = [] }) {
   return (
     <div className="relative">
       {/* Token stream */}
-      <div className="leading-relaxed text-base">
+      <div
+        className="leading-relaxed text-base"
+        style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+      >
         {tokens.map((token, idx) => {
           const trust = token.trust_avg ?? 0;
           const colorClass = getTrustColor(trust);
-          const dotClass = getTrustDot(trust);
+          const dotClass   = getTrustDot(trust);
+
+          const raw = token.text ?? "";
+
+          // A token starts a new word when it carries a leading space or ▁.
+          // The first token never gets a leading separator.
+          const isWordStart = raw.startsWith(" ") || raw.startsWith("▁");
+
+          // Strip the leading space / ▁ from display — it becomes a text node.
+          const display = raw.replace(/^[ ▁]+/, "") || raw;
 
           return (
-            <span
-              key={idx}
-              className={`
-                inline-block relative cursor-default px-0.5 py-0.5 mx-px rounded
-                border transition-all duration-150
-                ${colorClass}
-                ${hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : ""}
-              `}
-              onMouseEnter={(e) => handleMouseEnter(idx, e)}
-              onMouseLeave={() => setHoveredIdx(null)}
-            >
-              {token.text || " "}
-              {/* tiny trust dot */}
+            <Fragment key={idx}>
+              {/* Word-separator: text node so copy-paste preserves spaces */}
+              {idx > 0 && isWordStart && " "}
+
               <span
-                className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`}
-              />
-            </span>
+                className={`
+                  inline-block relative cursor-default px-0.5 py-0.5 rounded
+                  border transition-all duration-150
+                  ${colorClass}
+                  ${hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : ""}
+                `}
+                style={{ userSelect: "text" }}
+                onMouseEnter={(e) => handleMouseEnter(idx, e)}
+                onMouseLeave={() => setHoveredIdx(null)}
+              >
+                {display}
+                {/* tiny trust dot */}
+                <span
+                  className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`}
+                />
+              </span>
+            </Fragment>
           );
         })}
       </div>
 
-      {/* Hover popup — position:fixed, coordinates from mouse event (viewport-relative) */}
+      {/* Hover popup */}
       {hoveredToken && hoveredToken.attribution?.length > 0 && (
         <div
           className="bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-4 text-sm pointer-events-none"
