@@ -98,16 +98,30 @@ describe("TokenViewer — no stripping of whitespace", () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("TokenViewer — white-space: pre on token spans", () => {
+describe("TokenViewer — white-space: pre-wrap on token spans", () => {
 
-  it("each token span has whiteSpace='pre' so browser preserves leading spaces", () => {
+  it("each token span has whiteSpace='pre-wrap'", () => {
     const { container } = render(
       <TokenViewer tokens={[tok(" Hello"), tok("!"), tok(" How")]} />,
     );
     const spans = getTokenSpans(container);
     for (const span of spans) {
-      expect(span.style.whiteSpace).toBe("pre");
+      expect(span.style.whiteSpace).toBe("pre-wrap");
     }
+  });
+
+  it("▁ prefix is replaced with a regular space in display text", () => {
+    const { container } = render(<TokenViewer tokens={[tok("▁Hello")]} />);
+    const [span] = getTokenSpans(container);
+    // ▁ → " ", so textContent starts with a regular space
+    expect(span.textContent).toBe(" Hello");
+    expect(span.textContent.startsWith("▁")).toBe(false);
+  });
+
+  it("continuation token has no leading space", () => {
+    const { container } = render(<TokenViewer tokens={[tok("ness")]} />);
+    const [span] = getTokenSpans(container);
+    expect(span.textContent.startsWith(" ")).toBe(false);
   });
 
 });

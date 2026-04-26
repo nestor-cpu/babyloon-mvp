@@ -73,6 +73,15 @@ export default function TokenViewer({ tokens = [] }) {
           const colorClass = getTrustColor(trust);
           const dotClass   = getTrustDot(trust);
 
+          const raw = token.text ?? "";
+
+          // Word-start tokens carry a leading " " (Mistral) or "▁" (SentencePiece).
+          // Replace ▁ with a regular space so it renders correctly.
+          // Continuation subword tokens (no leading space) have none added —
+          // they render flush against the previous pill, correctly showing
+          // they are part of the same word ("trans" + "parency" → "transparency").
+          const display = raw.replace(/^▁/, " ") || " ";
+
           return (
             <span
               key={idx}
@@ -82,11 +91,11 @@ export default function TokenViewer({ tokens = [] }) {
                 ${colorClass}
                 ${hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : ""}
               `}
-              style={{ userSelect: "text", whiteSpace: "pre" }}
+              style={{ userSelect: "text", whiteSpace: "pre-wrap" }}
               onMouseEnter={(e) => handleMouseEnter(idx, e)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
-              {token.text || " "}
+              {display}
               {/* tiny trust dot */}
               <span
                 className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`}
