@@ -1,14 +1,15 @@
-import { useState, Fragment } from "react";
+import { useState } from "react";
 
 /**
  * TokenViewer — renders model output token-by-token, color-coded by trust score.
  * Expert View: each token is a highlighted pill.
  * Hover on any token → popup with source, weight, license, trust score.
  *
- * Copy behaviour:
- *   token.text (original, including any leading " " or "▁") is placed directly
- *   inside the <span>. The browser's native selection + Ctrl+C then copies the
- *   full text with correct spacing — no onCopy handler or data-raw tricks needed.
+ * Layout strategy — flexbox (flex-wrap: wrap):
+ *   All token pills are flex items. Inter-word spacing comes from CSS
+ *   marginLeft on word-start tokens, NOT from DOM whitespace text nodes.
+ *   This guarantees zero browser-inserted gaps between continuation subwords
+ *   regardless of JSX formatting or browser whitespace-collapsing rules.
  *
  * Props:
  *   tokens: TokenProvenance[] from /generate response
@@ -63,10 +64,17 @@ export default function TokenViewer({ tokens = [] }) {
 
   return (
     <div className="relative">
-      {/* Token stream */}
+      {/* Token stream — flex-wrap layout removes all browser whitespace gaps */}
       <div
-        className="leading-relaxed text-base"
-        style={{ wordBreak: "break-word", overflowWrap: "break-word" }}
+        className="text-base"
+        style={{
+          display:       "flex",
+          flexWrap:      "wrap",
+          alignItems:    "baseline",
+          columnGap:     0,
+          rowGap:        "3px",
+          lineHeight:    1.7,
+        }}
       >
         {tokens.map((token, idx) => {
           const trust = token.trust_avg ?? 0;
@@ -76,60 +84,34 @@ export default function TokenViewer({ tokens = [] }) {
           const raw = token.text ?? "";
 
           // Word-start: begins with " " (Mistral) or "▁" (SentencePiece/Gemma).
-          // Continuation: no leading space — this is a subword fragment that
-          // belongs flush to the previous token ("trans" + "parency").
+          // Continuation: no leading space — subword fragment that belongs flush
+          // to the previous pill ("Art" + "ificial", "trans" + "parency").
           const isWordStart = raw.startsWith(" ") || raw.startsWith("▁");
 
-          // Strip exactly one leading space / ▁ for display; for word-start
-          // tokens the gap comes from the " " text node rendered before the span.
+          // Strip exactly one leading space / ▁ for display inside the pill.
           const display = isWordStart ? raw.replace(/^[ ▁]/, "") : raw;
 
-          // Shared hover ring
+          // Inter-word gap via marginLeft only — no DOM text nodes, so the
+          // browser cannot inject whitespace between continuation pills.
+          const marginLeft = isWordStart && idx > 0 ? "0.25em" : 0;
+
           const hoverClass = hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : "";
 
           const dot = (
-            <span className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`} />
+            <span
+              className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`}
+            />
           );
 
-          if (isWordStart) {
-            // Word-start pill: preceded by a plain " " text node so that
-            // copy-paste preserves the inter-word space without it being
-            // part of the coloured pill background.
-            return (
-              <Fragment key={idx}>
-                {idx > 0 && " "}
-                <span
-                  className={`
-                    inline-block relative cursor-default px-0.5 py-0.5 rounded
-                    border transition-all duration-150
-                    ${colorClass} ${hoverClass}
-                  `}
-                  style={{ userSelect: "text", whiteSpace: "normal" }}
-                  onMouseEnter={(e) => handleMouseEnter(idx, e)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                >
-                  {display || "​"}{/* zero-width space keeps pill visible for empty display */}
-                  {dot}
-                </span>
-              </Fragment>
-            );
-          }
-
-          // Continuation pill: display: inline, no horizontal padding so it
-          // renders flush against the previous token pill.
           return (
             <span
               key={idx}
-              className={`
-                inline relative cursor-default py-0.5 rounded
-                border transition-all duration-150
-                ${colorClass} ${hoverClass}
-              `}
-              style={{ userSelect: "text", whiteSpace: "normal" }}
+              className={`relative cursor-default px-0.5 py-0.5 rounded border transition-all duration-150 ${colorClass} ${hoverClass}`}
+              style={{ marginLeft, userSelect: "text" }}
               onMouseEnter={(e) => handleMouseEnter(idx, e)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
-              {display || "​"}
+              {display || "​"}{/* zero-width space keeps pill visible for empty display */}
               {dot}
             </span>
           );
