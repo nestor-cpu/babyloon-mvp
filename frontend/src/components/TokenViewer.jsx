@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 
 /**
  * TokenViewer — renders model output token-by-token, color-coded by trust score.
@@ -75,31 +75,62 @@ export default function TokenViewer({ tokens = [] }) {
 
           const raw = token.text ?? "";
 
-          // Word-start tokens carry a leading " " (Mistral) or "▁" (SentencePiece).
-          // Replace ▁ with a regular space so it renders correctly.
-          // Continuation subword tokens (no leading space) have none added —
-          // they render flush against the previous pill, correctly showing
-          // they are part of the same word ("trans" + "parency" → "transparency").
-          const display = raw.replace(/^▁/, " ") || " ";
+          // Word-start: begins with " " (Mistral) or "▁" (SentencePiece/Gemma).
+          // Continuation: no leading space — this is a subword fragment that
+          // belongs flush to the previous token ("trans" + "parency").
+          const isWordStart = raw.startsWith(" ") || raw.startsWith("▁");
 
+          // Strip exactly one leading space / ▁ for display; for word-start
+          // tokens the gap comes from the " " text node rendered before the span.
+          const display = isWordStart ? raw.replace(/^[ ▁]/, "") : raw;
+
+          // Shared hover ring
+          const hoverClass = hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : "";
+
+          const dot = (
+            <span className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`} />
+          );
+
+          if (isWordStart) {
+            // Word-start pill: preceded by a plain " " text node so that
+            // copy-paste preserves the inter-word space without it being
+            // part of the coloured pill background.
+            return (
+              <Fragment key={idx}>
+                {idx > 0 && " "}
+                <span
+                  className={`
+                    inline-block relative cursor-default px-0.5 py-0.5 rounded
+                    border transition-all duration-150
+                    ${colorClass} ${hoverClass}
+                  `}
+                  style={{ userSelect: "text", whiteSpace: "normal" }}
+                  onMouseEnter={(e) => handleMouseEnter(idx, e)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  {display || "​"}{/* zero-width space keeps pill visible for empty display */}
+                  {dot}
+                </span>
+              </Fragment>
+            );
+          }
+
+          // Continuation pill: display: inline, no horizontal padding so it
+          // renders flush against the previous token pill.
           return (
             <span
               key={idx}
               className={`
-                inline-block relative cursor-default px-0.5 py-0.5 rounded
+                inline relative cursor-default py-0.5 rounded
                 border transition-all duration-150
-                ${colorClass}
-                ${hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : ""}
+                ${colorClass} ${hoverClass}
               `}
-              style={{ userSelect: "text", whiteSpace: "pre-wrap" }}
+              style={{ userSelect: "text", whiteSpace: "normal" }}
               onMouseEnter={(e) => handleMouseEnter(idx, e)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
-              {display}
-              {/* tiny trust dot */}
-              <span
-                className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`}
-              />
+              {display || "​"}
+              {dot}
             </span>
           );
         })}

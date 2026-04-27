@@ -22,21 +22,29 @@ function getTokenSpans(container) {
   return Array.from(stream.querySelectorAll(":scope > span"));
 }
 
+/**
+ * Returns the full text content of the token stream div,
+ * including text nodes between spans (the inter-word spaces).
+ */
+function getStreamText(container) {
+  return container.querySelector(".leading-relaxed").textContent;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("TokenViewer — leading-space preservation", () => {
+describe("TokenViewer — word-start vs continuation rendering", () => {
 
-  it("token ' Hello' renders textContent that starts with a space", () => {
+  it("word-start token ' Hello': span textContent is 'Hello' (space is a sibling text node)", () => {
     const { container } = render(<TokenViewer tokens={[tok(" Hello")]} />);
     const [span] = getTokenSpans(container);
-    // textContent = token.text + inner dot-span's content (empty)
-    expect(span.textContent).toBe(" Hello");
+    // The leading space is emitted as a text node BEFORE the span, not inside it.
+    expect(span.textContent).toBe("Hello");
   });
 
-  it("token ' How' renders textContent that starts with a space", () => {
+  it("word-start token ' How': span textContent is 'How'", () => {
     const { container } = render(<TokenViewer tokens={[tok(" How")]} />);
     const [span] = getTokenSpans(container);
-    expect(span.textContent).toBe(" How");
+    expect(span.textContent).toBe("How");
   });
 
   it("continuation token 'ness' renders without a leading space", () => {
@@ -44,6 +52,19 @@ describe("TokenViewer — leading-space preservation", () => {
     const [span] = getTokenSpans(container);
     expect(span.textContent).toBe("ness");
     expect(span.textContent.startsWith(" ")).toBe(false);
+  });
+
+  it("word-start token has inline-block class", () => {
+    const { container } = render(<TokenViewer tokens={[tok(" Hello")]} />);
+    const [span] = getTokenSpans(container);
+    expect(span.className).toContain("inline-block");
+  });
+
+  it("continuation token has inline class (not inline-block)", () => {
+    const { container } = render(<TokenViewer tokens={[tok("ness")]} />);
+    const [span] = getTokenSpans(container);
+    expect(span.className).toContain("inline");
+    expect(span.className).not.toContain("inline-block");
   });
 
 });
@@ -58,67 +79,81 @@ describe("TokenViewer — copy-paste concatenation", () => {
     expect(joined).toBe(" Hello! How");
   });
 
-  it("DOM spans preserve leading spaces so user selection gives correct text", () => {
+  it("stream div textContent includes inter-word spaces from text nodes", () => {
     const tokens = [tok(" Hello"), tok("!"), tok(" How")];
     const { container } = render(<TokenViewer tokens={tokens} />);
-    const spans = getTokenSpans(container);
+    // The stream's full textContent includes the " " text nodes emitted before
+    // each word-start token (idx > 0). dot-spans have no text content.
+    // Result: "Hello" + "!" + " " + "How" = "Hello! How"
+    expect(getStreamText(container)).toBe("Hello! How");
+  });
 
-    // Each span's textContent must match token.text exactly.
-    expect(spans[0].textContent).toBe(" Hello");
-    expect(spans[1].textContent).toBe("!");
-    expect(spans[2].textContent).toBe(" How");
+  it("continuation subword 'trans'+'parency' — spans are flush, stream text is 'transparency'", () => {
+    const tokens = [tok("trans"), tok("parency")];
+    const { container } = render(<TokenViewer tokens={tokens} />);
+    expect(getStreamText(container)).toBe("transparency");
+  });
 
-    // Concatenation of textContents == concatenation of original token.text values.
-    const domText  = spans.map(s => s.textContent).join("");
-    const rawText  = tokens.map(t => t.text).join("");
-    expect(domText).toBe(rawText);        // " Hello! How"
-    expect(domText).toBe(" Hello! How");
+  it("word + subword: ' show'+'case' → stream text is ' showcase'", () => {
+    // idx=0 word-start has no preceding text node; idx=1 is continuation flush.
+    const tokens = [tok(" show"), tok("case")];
+    const { container } = render(<TokenViewer tokens={tokens} />);
+    // word-start span = "show", continuation span = "case"
+    // No text node before idx=0 (idx > 0 is false), no space between them.
+    expect(getStreamText(container)).toBe("showcase");
   });
 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("TokenViewer — no stripping of whitespace", () => {
+describe("TokenViewer — special token display", () => {
 
-  it("does not trim the leading space from ' can'", () => {
+  it("does not trim the leading space from ' can' — span displays 'can'", () => {
     const { container } = render(<TokenViewer tokens={[tok(" can")]} />);
     const [span] = getTokenSpans(container);
-    expect(span.textContent).not.toBe("can");
-    expect(span.textContent).toBe(" can");
+    // Span displays stripped text; space is the sibling text node.
+    expect(span.textContent).toBe("can");
   });
 
-  it("renders an empty/falsy token as a single space fallback", () => {
+  it("renders an empty/falsy token span with zero-width space fallback", () => {
     const { container } = render(<TokenViewer tokens={[tok("")]} />);
     const [span] = getTokenSpans(container);
-    expect(span.textContent).toBe(" "); // {token.text || " "}
+    // Empty display → zero-width space keeps pill visible.
+    expect(span.textContent).toBe("​");
   });
 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("TokenViewer — white-space: pre-wrap on token spans", () => {
+describe("TokenViewer — whitespace and ▁ handling", () => {
 
-  it("each token span has whiteSpace='pre-wrap'", () => {
+  it("each token span has whiteSpace='normal'", () => {
     const { container } = render(
       <TokenViewer tokens={[tok(" Hello"), tok("!"), tok(" How")]} />,
     );
     const spans = getTokenSpans(container);
     for (const span of spans) {
-      expect(span.style.whiteSpace).toBe("pre-wrap");
+      expect(span.style.whiteSpace).toBe("normal");
     }
   });
 
-  it("▁ prefix is replaced with a regular space in display text", () => {
+  it("▁ prefix token is treated as word-start: span displays 'Hello' (no ▁)", () => {
     const { container } = render(<TokenViewer tokens={[tok("▁Hello")]} />);
     const [span] = getTokenSpans(container);
-    // ▁ → " ", so textContent starts with a regular space
-    expect(span.textContent).toBe(" Hello");
+    expect(span.textContent).toBe("Hello");
     expect(span.textContent.startsWith("▁")).toBe(false);
+    expect(span.textContent.startsWith(" ")).toBe(false);
   });
 
-  it("continuation token has no leading space", () => {
+  it("▁ prefix token has inline-block class (word-start)", () => {
+    const { container } = render(<TokenViewer tokens={[tok("▁Hello")]} />);
+    const [span] = getTokenSpans(container);
+    expect(span.className).toContain("inline-block");
+  });
+
+  it("continuation token has no leading space in textContent", () => {
     const { container } = render(<TokenViewer tokens={[tok("ness")]} />);
     const [span] = getTokenSpans(container);
     expect(span.textContent.startsWith(" ")).toBe(false);
