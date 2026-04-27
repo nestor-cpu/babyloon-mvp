@@ -13,108 +13,42 @@ function tok(text, trust = 0.85) {
   return { text, trust_avg: trust, position: 0, attribution: [] };
 }
 
-/**
- * Returns all direct-child spans of the token stream flex container
- * (the coloured token pills — every token is a single flex item).
- */
-function getTokenSpans(container) {
-  const stream = container.querySelector("[style*='flex-wrap']");
-  return Array.from(stream.querySelectorAll(":scope > span"));
+/** All .token-pill spans — one per token, excludes the space spans. */
+function getPills(container) {
+  return Array.from(container.querySelectorAll(".token-pill"));
+}
+
+/** The token stream container element. */
+function getStream(container) {
+  return container.querySelector("[data-testid='token-stream']");
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("TokenViewer — word-start vs continuation pill content", () => {
+describe("TokenViewer — container layout (fontSize:0 trick)", () => {
 
-  it("word-start token ' Hello': pill textContent is 'Hello' (leading space stripped)", () => {
+  it("stream container has fontSize 0 (kills browser whitespace between inline spans)", () => {
     const { container } = render(<TokenViewer tokens={[tok(" Hello")]} />);
-    const [span] = getTokenSpans(container);
-    expect(span.textContent).toBe("Hello");
+    // React sets style.fontSize; jsdom normalises 0 → "0px".
+    const fs = getStream(container).style.fontSize;
+    expect(fs === "0" || fs === "0px").toBe(true);
   });
 
-  it("word-start token ' How': pill textContent is 'How'", () => {
-    const { container } = render(<TokenViewer tokens={[tok(" How")]} />);
-    const [span] = getTokenSpans(container);
-    expect(span.textContent).toBe("How");
+  it("every token pill has fontSize '14px' (restores readable size)", () => {
+    const { container } = render(
+      <TokenViewer tokens={[tok(" Hello"), tok("!"), tok(" World")]} />,
+    );
+    for (const pill of getPills(container)) {
+      expect(pill.style.fontSize).toBe("14px");
+    }
   });
 
-  it("continuation token 'ness': pill textContent is 'ness' (no leading space)", () => {
-    const { container } = render(<TokenViewer tokens={[tok("ness")]} />);
-    const [span] = getTokenSpans(container);
-    expect(span.textContent).toBe("ness");
-    expect(span.textContent.startsWith(" ")).toBe(false);
-  });
-
-  it("continuation token 'ificial': textContent is 'ificial' (no space)", () => {
-    const { container } = render(<TokenViewer tokens={[tok("ificial")]} />);
-    const [span] = getTokenSpans(container);
-    expect(span.textContent).toBe("ificial");
-  });
-
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe("TokenViewer — flexbox marginLeft spacing", () => {
-
-  it("first token (idx=0) has marginLeft=0 regardless of word-start", () => {
-    const { container } = render(<TokenViewer tokens={[tok(" Hello")]} />);
-    const [span] = getTokenSpans(container);
-    // First token never gets a left margin.
-    const ml = span.style.marginLeft;
-    expect(ml === "" || ml === "0px" || ml === "0").toBe(true);
-  });
-
-  it("second word-start token has marginLeft='0.25em'", () => {
-    const tokens = [tok(" Hello"), tok(" World")];
-    const { container } = render(<TokenViewer tokens={tokens} />);
-    const spans = getTokenSpans(container);
-    expect(spans[1].style.marginLeft).toBe("0.25em");
-  });
-
-  it("continuation token has marginLeft=0 (flush with previous pill)", () => {
-    const tokens = [tok(" Art"), tok("ificial")];
-    const { container } = render(<TokenViewer tokens={tokens} />);
-    const spans = getTokenSpans(container);
-    const ml = spans[1].style.marginLeft;
-    expect(ml === "" || ml === "0px" || ml === "0").toBe(true);
-  });
-
-  it("▁ prefix token at idx>0 has marginLeft='0.25em'", () => {
-    const tokens = [tok("Hello"), tok("▁World")];
-    const { container } = render(<TokenViewer tokens={tokens} />);
-    const spans = getTokenSpans(container);
-    expect(spans[1].style.marginLeft).toBe("0.25em");
-  });
-
-});
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe("TokenViewer — token count and structure", () => {
-
-  it("renders exactly one span per token", () => {
-    const tokens = [tok(" Hello"), tok("!"), tok(" How")];
-    const { container } = render(<TokenViewer tokens={tokens} />);
-    const spans = getTokenSpans(container);
-    expect(spans).toHaveLength(3);
-  });
-
-  it("'Art' + 'ificial' renders 2 spans, not 3 (no extra whitespace node span)", () => {
-    const tokens = [tok(" Art"), tok("ificial")];
-    const { container } = render(<TokenViewer tokens={tokens} />);
-    const spans = getTokenSpans(container);
-    expect(spans).toHaveLength(2);
-  });
-
-  it("continuation subword pills have zero left margin (no CSS gap injected)", () => {
-    const tokens = [tok(" trans"), tok("par"), tok("ency")];
-    const { container } = render(<TokenViewer tokens={tokens} />);
-    const spans = getTokenSpans(container);
-    // "par" and "ency" are continuations — marginLeft must be 0
-    for (const span of [spans[1], spans[2]]) {
-      const ml = span.style.marginLeft;
-      expect(ml === "" || ml === "0px" || ml === "0").toBe(true);
+  it("every token pill has display 'inline'", () => {
+    const { container } = render(
+      <TokenViewer tokens={[tok(" Hello"), tok("ness"), tok(" How")]} />,
+    );
+    for (const pill of getPills(container)) {
+      expect(pill.style.display).toBe("inline");
     }
   });
 
@@ -122,45 +56,124 @@ describe("TokenViewer — token count and structure", () => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("TokenViewer — special token display", () => {
+describe("TokenViewer — word-start vs continuation pill content", () => {
 
-  it("▁ prefix is stripped from display: '▁Hello' → pill shows 'Hello'", () => {
+  it("word-start ' Hello' → pill textContent is 'Hello' (space stripped)", () => {
+    const { container } = render(<TokenViewer tokens={[tok(" Hello")]} />);
+    const [pill] = getPills(container);
+    expect(pill.textContent).toBe("Hello");
+  });
+
+  it("continuation 'ness' → pill textContent is 'ness'", () => {
+    const { container } = render(<TokenViewer tokens={[tok("ness")]} />);
+    const [pill] = getPills(container);
+    expect(pill.textContent).toBe("ness");
+    expect(pill.textContent.startsWith(" ")).toBe(false);
+  });
+
+  it("Cyrillic continuation 'р' → pill textContent is 'р' (no leading space)", () => {
+    const { container } = render(<TokenViewer tokens={[tok("р")]} />);
+    const [pill] = getPills(container);
+    expect(pill.textContent).toBe("р");
+    expect(pill.textContent.startsWith(" ")).toBe(false);
+  });
+
+  it("▁ prefix stripped: '▁Hello' → pill textContent is 'Hello'", () => {
     const { container } = render(<TokenViewer tokens={[tok("▁Hello")]} />);
-    const [span] = getTokenSpans(container);
-    expect(span.textContent).toBe("Hello");
-    expect(span.textContent.startsWith("▁")).toBe(false);
+    const [pill] = getPills(container);
+    expect(pill.textContent).toBe("Hello");
+    expect(pill.textContent.startsWith("▁")).toBe(false);
   });
 
-  it("empty token renders a zero-width space (keeps pill visible)", () => {
+  it("empty token → pill shows zero-width space (pill stays visible)", () => {
     const { container } = render(<TokenViewer tokens={[tok("")]} />);
-    const [span] = getTokenSpans(container);
-    expect(span.textContent).toBe("​"); // zero-width space U+200B
-  });
-
-  it("token.text concatenation preserves the original spacing", () => {
-    const tokens = [tok(" Hello"), tok("!"), tok(" How")];
-    const joined = tokens.map(t => t.text).join("");
-    expect(joined).toBe(" Hello! How");
+    const [pill] = getPills(container);
+    expect(pill.textContent).toBe("​"); // U+200B zero-width space
   });
 
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-describe("TokenViewer — flex container layout", () => {
+describe("TokenViewer — horizontal padding rules", () => {
 
-  it("stream container uses flex layout with flex-wrap", () => {
+  it("word-start pill has px-0.5 class (horizontal breathing room)", () => {
     const { container } = render(<TokenViewer tokens={[tok(" Hello")]} />);
-    const stream = container.querySelector("[style*='flex-wrap']");
-    expect(stream).not.toBeNull();
-    expect(stream.style.display).toBe("flex");
-    expect(stream.style.flexWrap).toBe("wrap");
+    const [pill] = getPills(container);
+    expect(pill.className).toContain("px-0.5");
   });
 
-  it("stream container aligns items to baseline", () => {
+  it("continuation pill does NOT have px-0.5 (renders flush, no Cyrillic gaps)", () => {
+    const { container } = render(<TokenViewer tokens={[tok("р")]} />);
+    const [pill] = getPills(container);
+    expect(pill.className).not.toContain("px-0.5");
+  });
+
+  it("subword continuation 'ificial' has no px-0.5", () => {
+    const { container } = render(<TokenViewer tokens={[tok("ificial")]} />);
+    const [pill] = getPills(container);
+    expect(pill.className).not.toContain("px-0.5");
+  });
+
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("TokenViewer — space span for word separation", () => {
+
+  it("renders exactly one pill per token", () => {
+    const tokens = [tok(" Hello"), tok("!"), tok(" How")];
+    const { container } = render(<TokenViewer tokens={tokens} />);
+    expect(getPills(container)).toHaveLength(3);
+  });
+
+  it("word-start at idx>0 gets a preceding space span (for copy-paste)", () => {
+    const tokens = [tok(" Hello"), tok(" World")];
+    const { container } = render(<TokenViewer tokens={tokens} />);
+    const stream = getStream(container);
+    // All direct inline children (pills + space spans).
+    // The space span for 'World' contains " " and does NOT have token-pill class.
+    const allSpans = Array.from(stream.querySelectorAll("span:not(.token-pill)"))
+      .filter(s => !s.closest(".token-pill")); // exclude dot spans inside pills
+    const spaceSpans = allSpans.filter(s => s.textContent === " ");
+    expect(spaceSpans.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("first token (idx=0) has no preceding space span", () => {
     const { container } = render(<TokenViewer tokens={[tok(" Hello")]} />);
-    const stream = container.querySelector("[style*='flex-wrap']");
-    expect(stream.style.alignItems).toBe("baseline");
+    const stream = getStream(container);
+    const nonPillSpans = Array.from(stream.querySelectorAll("span:not(.token-pill)"))
+      .filter(s => !s.closest(".token-pill") && s.textContent === " ");
+    // No space before idx=0
+    expect(nonPillSpans).toHaveLength(0);
+  });
+
+  it("continuation tokens have no space span before them", () => {
+    // 'п','р','о' are all continuation — no space spans expected
+    const tokens = [tok("п"), tok("р"), tok("о")];
+    const { container } = render(<TokenViewer tokens={tokens} />);
+    const stream = getStream(container);
+    const spaceSpans = Array.from(stream.querySelectorAll("span:not(.token-pill)"))
+      .filter(s => !s.closest(".token-pill") && s.textContent === " ");
+    expect(spaceSpans).toHaveLength(0);
+  });
+
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe("TokenViewer — copy-paste token.text concatenation", () => {
+
+  it("joining token.text values preserves word spacing: ' Hello' + '!' + ' How'", () => {
+    const tokens = [tok(" Hello"), tok("!"), tok(" How")];
+    const joined = tokens.map(t => t.text).join("");
+    expect(joined).toBe(" Hello! How");
+  });
+
+  it("Cyrillic chars joined without spaces: 'п'+'р'+'о' = 'про'", () => {
+    const tokens = [tok("п"), tok("р"), tok("о")];
+    const joined = tokens.map(t => t.text).join("");
+    expect(joined).toBe("про");
   });
 
 });

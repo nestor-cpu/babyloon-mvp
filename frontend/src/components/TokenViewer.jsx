@@ -1,15 +1,23 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 
 /**
  * TokenViewer — renders model output token-by-token, color-coded by trust score.
  * Expert View: each token is a highlighted pill.
  * Hover on any token → popup with source, weight, license, trust score.
  *
- * Layout strategy — flexbox (flex-wrap: wrap):
- *   All token pills are flex items. Inter-word spacing comes from CSS
- *   marginLeft on word-start tokens, NOT from DOM whitespace text nodes.
- *   This guarantees zero browser-inserted gaps between continuation subwords
- *   regardless of JSX formatting or browser whitespace-collapsing rules.
+ * Layout strategy — fontSize:0 container:
+ *   The container font-size is set to 0 to kill any browser-injected whitespace
+ *   between adjacent inline elements (caused by JSX newlines / HTML source gaps).
+ *   Every token pill restores font-size to 14px via inline style.
+ *
+ *   Inter-word spacing is a plain " " inside a dedicated <span> rendered only for
+ *   word-start tokens (those whose raw text begins with " " or "▁"). This span is
+ *   selectable, so Ctrl+C copy-paste preserves word spacing.
+ *
+ *   Continuation tokens (Cyrillic individual chars, Latin subwords) carry NO
+ *   horizontal padding — they render flush to the neighbouring pill so "проєкт"
+ *   tokenised as ['п','р','о','є','к','т'] displays as a single highlighted block,
+ *   not six space-separated characters.
  *
  * Props:
  *   tokens: TokenProvenance[] from /generate response
@@ -62,19 +70,20 @@ export default function TokenViewer({ tokens = [] }) {
     return cleanW / totalW;
   }
 
+  // Shared inline style applied to every rendered span so fontSize:0 on the
+  // container doesn't bleed into the pills / space nodes.
+  const SPAN_STYLE = { fontSize: "14px", display: "inline", userSelect: "text" };
+
   return (
     <div className="relative">
-      {/* Token stream — flex-wrap layout removes all browser whitespace gaps */}
+      {/* Token stream ─────────────────────────────────────────────────────
+          fontSize:0 on the container eliminates all whitespace text nodes that
+          browsers inject between inline elements due to JSX source formatting.
+          Each child span restores its own font size explicitly.           */}
       <div
-        className="text-base"
-        style={{
-          display:       "flex",
-          flexWrap:      "wrap",
-          alignItems:    "baseline",
-          columnGap:     0,
-          rowGap:        "3px",
-          lineHeight:    1.7,
-        }}
+        data-testid="token-stream"
+        className="leading-relaxed"
+        style={{ fontSize: 0 }}
       >
         {tokens.map((token, idx) => {
           const trust = token.trust_avg ?? 0;
@@ -83,31 +92,27 @@ export default function TokenViewer({ tokens = [] }) {
 
           const raw = token.text ?? "";
 
-          // Word-start: begins with " " (Mistral) or "▁" (SentencePiece/Gemma).
-          // Continuation: no leading space — subword fragment that belongs flush
-          // to the previous pill ("Art" + "ificial", "trans" + "parency").
+          // Word-start: token begins with " " (Mistral) or "▁" (SentencePiece).
+          // Continuation: no leading whitespace — renders flush to previous pill.
           const isWordStart = raw.startsWith(" ") || raw.startsWith("▁");
 
-          // Strip exactly one leading space / ▁ for display inside the pill.
+          // Strip the leading separator for the visual pill label.
           const display = isWordStart ? raw.replace(/^[ ▁]/, "") : raw;
-
-          // Inter-word gap via marginLeft only — no DOM text nodes, so the
-          // browser cannot inject whitespace between continuation pills.
-          const marginLeft = isWordStart && idx > 0 ? "0.25em" : 0;
 
           const hoverClass = hoveredIdx === idx ? "ring-1 ring-white/40 scale-105" : "";
 
+          // Horizontal padding only on word-start pills (gives them breathing room).
+          // Continuation pills have no px-padding so adjacent chars are truly flush.
+          const hPad = isWordStart ? "px-0.5" : "";
+
           const dot = (
-            <span
-              className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`}
-            />
+            <span className={`absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full ${dotClass}`} />
           );
 
-          return (
+          const pill = (
             <span
-              key={idx}
-              className={`relative cursor-default px-0.5 py-0.5 rounded border transition-all duration-150 ${colorClass} ${hoverClass}`}
-              style={{ marginLeft, userSelect: "text" }}
+              className={`token-pill relative cursor-default ${hPad} py-0.5 rounded border transition-all duration-150 ${colorClass} ${hoverClass}`}
+              style={SPAN_STYLE}
               onMouseEnter={(e) => handleMouseEnter(idx, e)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
@@ -115,6 +120,19 @@ export default function TokenViewer({ tokens = [] }) {
               {dot}
             </span>
           );
+
+          if (isWordStart && idx > 0) {
+            // Space is a selectable plain-text span — copy-paste preserves spacing.
+            return (
+              <Fragment key={idx}>
+                <span style={SPAN_STYLE}>{" "}</span>
+                {pill}
+              </Fragment>
+            );
+          }
+
+          // First token OR continuation — no preceding space span.
+          return <Fragment key={idx}>{pill}</Fragment>;
         })}
       </div>
 
