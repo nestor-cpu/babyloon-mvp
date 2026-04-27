@@ -425,6 +425,6 @@ class ProvenanceAttribution:
         if self.tokenizer is None:
             return f"[{token_id}]"
         try:
-            tok = self.tokenizer.convert_ids_to_tokens([token_id])[0] or ""; tok = tok.replace("▁", " "); return tok if not tok.startswith("<") else self.tokenizer.decode([token_id])
+            tok = self.tokenizer.convert_ids_to_tokens([token_id])[0] or ""; tok = tok.replace("▁", " "); return "" if tok in {"</s>", "<s>", "<unk>", "<pad>", "<0x0A>"} else (tok if not tok.startswith("<") else self.tokenizer.decode([token_id]))
         except Exception:
             return f"[{token_id}]"
